@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Chat Application</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f7;
+        }
+        .chat {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 600px;
+            width: 100%;
+            margin: auto;
+            box-shadow: 0 0 10px rgba(19, 8, 77, 0.1);
+            background-color: #060718;
+            border-radius: 15px; /* Curved corners for the chat container */
+            overflow: hidden; /* Prevents overflow for rounded corners */
+        }
+        .chat-header {
+            padding: 10px;
+            background: linear-gradient(135deg, #4c8dff, #4762a0);
+            color: white;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            border-bottom: 2px solid #6290c1;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-top-left-radius: 15px; /* Curved top left corner */
+            border-top-right-radius: 15px; /* Curved top right corner */
+            
+        }  
+    
+        .chat-header i {
+            margin-right: 10px; /* Space between icon and title */
+            font-size: 26px; /* Size of the icon */
+        }
+       
+        
+        .chat-body {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: #ffffff;
+        }
+        .chat-message {
+            margin: 10px 0;
+            padding: 10px 20px;
+            border-radius: 5px;
+            width: fit-content;
+            max-width: 80%;
+            font-size: 16px;
+        }
+        .chat-message.user {
+            background-color:#000000; /* User message color */
+            color: white;
+            align-self: flex-end;
+            border-radius: 25px 25px 0 25px; /* Curved border */
+        }
+        .chat-message.bot {
+            background-color:#e9ecef; /* Bot message color */
+            color: black;
+            align-self: flex-start;
+            border-radius: 25px 25px 25px 0; /* Curved border */
+            animation: fadeIn 0.5s ease;
+        }
+        .chat-footer {
+            padding: 15px;
+            background-color: #7eb4e4;
+            display: flex;
+            align-items: center;
+            border-top: 1px solid #0d0d0d;
+        }
+        .chat-footer input {
+            flex-grow: 1;
+            margin-right: 20px;
+            border-radius: 20px;
+            padding: 10px;
+            border: 1px solid #cccccc;
+            font-size: 16px;
+        }
+        .chat-footer button {
+            background: linear-gradient(135deg, #4c8dff, #2c6aff);
+            border: none;
+            border-radius: 20px;
+            padding: 10px 20px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .chat-footer button:hover {
+            background: linear-gradient(135deg, #2c6aff, #0044cc);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        
+    </style>
+</head>
+<body>
+
+    <div class="chat">
+    
+        <div class="chat-header">
+            
+         <p class="text"> Ai-SmartBot</p>
+        </div>
+
+        <div class="chat-body" id="chat-body">
+        </div>
+
+        <div class="chat-footer">
+            <input type="text" class="form-control" id="message-input" placeholder="Type your message here...">
+            <button class="btn btn-primary" id="send-button">Send</button>
+        </div>
+    </div>
+
+    <!-- jQuery and Bootstrap JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.6/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            
+            $('#send-button').click(function () {
+                sendMessage();
+            });
+
+              // Send message on Enter key press
+            $('#message-input').on('keypress', function (e) {
+                if (e.which === 13) {
+                    sendMessage();
+                    return false;  // Prevent the default form submission
+                }
+            });
+
+            function sendMessage() {
+                var userMessage = $('#message-input').val().trim();
+                if (userMessage) {
+                    
+                    $('#chat-body').append('<div class="chat-message user">' + userMessage + '</div>');
+
+                    $('#message-input').val("");
+
+                    $('#chat-body').animate({ scrollTop: $('#chat-body')[0].scrollHeight }, 500);  // Smooth scroll to bottom
+
+
+
+                     // Show loading message
+                    const loadingMessage = $('<div class="loading">Bot is typing...</div>');
+                    $('#chat-body').append(loadingMessage);
+                    $('#chat-body').animate({ scrollTop: $('#chat-body')[0].scrollHeight }, 500);  // Smooth scroll to bottom
+
+
+                    $.ajax({
+                        url: '/chat',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ "message": userMessage }),
+                        success: function (response) {
+
+                            loadingMessage.remove();  // removing loading message
+
+                            // Apply formatting:
+                            var formattedResponse = response.response
+                                .replace(/\n/g, '<br>')  // Replace newlines with <br> for line breaks
+                                .replace(/(Important:|Note:|Warning:)/g, '<strong>$1</strong>')  // Bold specific keywords
+                                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');  // Replace **text** with <strong>text</strong>
+
+                            // Appended the formatted response to the chat    
+                            $('#chat-body').append('<div class="chat-message bot">' + formattedResponse + '</div>');
+                            $('#chat-body').animate({ scrollTop: $('#chat-body')[0].scrollHeight }, 500);  // Smooth scroll to bottom
+
+                        },
+                        error: function (xhr, status, error) {
+                            loadingMessage.remove();  // Remove loading message on error as well
+                            console.error("Error: " + error);
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+</html>
