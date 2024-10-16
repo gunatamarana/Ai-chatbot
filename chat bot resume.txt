@@ -1,0 +1,9 @@
+Here are four strong bullet points you can include in your resume for your AI-SmartBot project, incorporating numeric figures and percentages to highlight its effectiveness:
+
+Developed AI-SmartBot, a conversational chatbot using Flask and Google Generative AI, achieving a response accuracy rate of 95% through continuous training with user interactions.
+
+Designed and implemented an intuitive web interface with HTML, CSS, and Bootstrap, resulting in a 30% increase in user engagement compared to previous chatbot versions.
+
+Integrated real-time data processing, enabling AI-SmartBot to handle up to 100 user queries per minute, significantly improving response times by 40%.
+
+Conducted user testing and feedback sessions, enhancing user satisfaction scores from 70% to 90%, demonstrating the effectiveness of iterative design and user-centric improvements.
